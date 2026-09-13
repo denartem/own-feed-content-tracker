@@ -1,0 +1,13 @@
+{
+  "id": "demo-sport-demo-players-cup",
+  "notes": "",
+  "pool": [
+    { "name": "Player One", "strength": null },
+    { "name": "Player Three", "strength": null },
+    { "name": "Player Two", "strength": null }
+  ],
+  "units": [
+    { "id": "u001", "a": "Player One", "b": null, "status": "done", "priority": null, "videos": null, "note": "", "updatedAt": "2026-09-12", "history": [{ "at": "2026-09-12", "event": "фікстура" }] },
+    { "id": "u002", "a": "Player Two", "b": null, "status": "to do", "priority": null, "videos": null, "note": "", "updatedAt": "2026-09-12", "history": [{ "at": "2026-09-12", "event": "фікстура" }] }
+  ]
+}

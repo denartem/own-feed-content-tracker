@@ -1,0 +1,16 @@
+{
+  "id": "demo-sport-demo-pairs-cup",
+  "notes": "Синтетичні дані для перевірки.",
+  "pool": [
+    { "name": "Team Alpha", "strength": 0.3 },
+    { "name": "Team Beta", "strength": 0.25 },
+    { "name": "Team Delta", "strength": 0.22 },
+    { "name": "Team Gamma", "strength": 0.2 }
+  ],
+  "units": [
+    { "id": "u001", "a": "Team Alpha", "b": "Team Beta", "status": "done", "priority": null, "videos": 12, "note": "", "updatedAt": "2026-09-12", "history": [{ "at": "2026-09-12", "event": "фікстура" }] },
+    { "id": "u002", "a": "Team Gamma", "b": "Team Alpha", "status": "in progress", "priority": "high", "videos": 8, "note": "", "updatedAt": "2026-09-12", "history": [{ "at": "2026-09-12", "event": "фікстура" }] },
+    { "id": "u003", "a": "Team Beta", "b": "Team Gamma", "status": "to do", "priority": null, "videos": null, "note": "", "updatedAt": "2026-09-12", "history": [{ "at": "2026-09-12", "event": "фікстура" }] },
+    { "id": "u004", "a": "Team Alpha", "b": "Team Delta", "status": "invalid data", "priority": null, "videos": null, "note": "Мало матчів", "updatedAt": "2026-09-12", "history": [{ "at": "2026-09-12", "event": "фікстура" }] }
+  ]
+}

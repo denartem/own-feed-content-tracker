@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "contentTypes": [
+    { "id": "demo-pairs", "name": "Demo Pairs", "videosTarget": 10, "strength": true },
+    { "id": "demo-players", "name": "Demo Players", "videosTarget": null, "strength": false }
+  ],
+  "sports": [{ "id": "demo-sport", "name": "Demo Sport" }],
+  "categories": [{ "id": "demo-sport-demo", "sportId": "demo-sport", "name": "Demo" }],
+  "tournaments": [
+    { "id": "demo-sport-demo-pairs-cup", "categoryId": "demo-sport-demo", "name": "Pairs Cup", "contentTypeId": "demo-pairs", "unitType": "pair" },
+    { "id": "demo-sport-demo-players-cup", "categoryId": "demo-sport-demo", "name": "Players Cup", "contentTypeId": "demo-players", "unitType": "player" }
+  ]
+}
