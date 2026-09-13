@@ -7,6 +7,9 @@ import { unitLabel } from '../core/pairs.js';
 import { foldName, findInPool, compareNames } from '../core/names.js';
 import { tournamentHref, contentTypeHref } from './router.js';
 import { openUnitCard } from './unit-card.js';
+import { renderPassportTab } from './passport.js';
+import { renderPoolTab } from './pool-tab.js';
+import { renderHistoryTab } from './history-tab.js';
 import { openPasteDialog, openAddUnitDialog } from './paste-dialog.js';
 import { pluralUk } from '../core/commit-message.js';
 
@@ -147,6 +150,9 @@ function renderPairsTab(ctx, t, doc, ct) {
 
 const TABS = [
   ['pairs', 'Пари', renderPairsTab],
+  ['passport', 'Паспорт', renderPassportTab],
+  ['pool', 'Пул учасників', renderPoolTab],
+  ['history', 'Історія', renderHistoryTab],
 ];
 
 function renderHeader(ctx, t, doc, ct) {
