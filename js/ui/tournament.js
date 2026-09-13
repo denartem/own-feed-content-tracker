@@ -155,6 +155,39 @@ const TABS = [
   ['history', 'Історія', renderHistoryTab],
 ];
 
+const openPanels = new Set();
+
+function renderSettingsPanel(ctx, t) {
+  const { app, actions } = ctx;
+  return h('details', {
+    class: 't-settings', open: openPanels.has(t.id),
+    onToggle: (e) => (e.target.open ? openPanels.add(t.id) : openPanels.delete(t.id)),
+  },
+  h('summary', {}, 'Налаштування турніру'),
+  h('div', { class: 'form-grid' },
+    h('label', { for: `t-name-${t.id}` }, 'Назва'),
+    h('input', {
+      id: `t-name-${t.id}`, value: t.name,
+      onChange: (e) => {
+        const name = e.target.value.trim();
+        if (name) actions.updateTournament(t.id, { name });
+      },
+    }),
+    h('label', { for: `t-type-${t.id}` }, 'Тип контенту'),
+    h('select', { id: `t-type-${t.id}`, onChange: (e) => actions.updateTournament(t.id, { contentTypeId: e.target.value }) },
+      app.state.structure.contentTypes.map((c) => h('option', { value: c.id, selected: c.id === t.contentTypeId }, c.name))),
+    h('span'),
+    h('div', {}, h('button', {
+      type: 'button', class: 'danger',
+      onClick: () => {
+        if (confirm(`Видалити турнір «${t.name}» разом з усіма його одиницями?`)) {
+          actions.deleteTournament(t.id);
+          location.hash = '#/';
+        }
+      },
+    }, 'Видалити турнір'))));
+}
+
 function renderHeader(ctx, t, doc, ct) {
   const { structure } = ctx.app.state;
   const category = structure.categories.find((c) => c.id === t.categoryId);
@@ -169,7 +202,8 @@ function renderHeader(ctx, t, doc, ct) {
       STATUSES.map((s) => h('span', { class: `chip ${statusClass(s)}` }, `${s}: ${st.byStatus[s]}`)),
       st.videosTotal ? h('span', { class: 'chip' }, `відео: ${st.videosTotal}`) : null,
       st.notAlphabetical ? h('span', { class: 'chip warn' }, `не за алфавітом: ${st.notAlphabetical}`) : null,
-      st.belowTarget ? h('span', { class: 'chip warn' }, `відео менше норми: ${st.belowTarget}`) : null));
+      st.belowTarget ? h('span', { class: 'chip warn' }, `відео менше норми: ${st.belowTarget}`) : null),
+    renderSettingsPanel(ctx, t));
 }
 
 export function renderTournament(ctx, route) {

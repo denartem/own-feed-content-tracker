@@ -10,11 +10,15 @@ import { renderLayout } from './ui/layout.js';
 import { renderOverview } from './ui/overview.js';
 import { renderSearch } from './ui/search.js';
 import { renderTournament } from './ui/tournament.js';
+import { renderContentTypePage } from './ui/content-type-page.js';
+import { renderNewItems } from './ui/new-items.js';
 import { renderSettings, renderTokenForm, TOKEN_KEY, REPO_KEY, DEFAULT_REPO } from './ui/settings.js';
 
 const PAGES = {
   overview: renderOverview,
   tournament: renderTournament,
+  contentType: renderContentTypePage,
+  new: renderNewItems,
   search: renderSearch,
   settings: renderSettings,
 };
