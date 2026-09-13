@@ -113,7 +113,13 @@ dialog::backdrop { background: rgba(0, 0, 0, .35); }
   .menu-toggle { display: inline-block; }
   .shell { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
-  body.nav-open .sidebar { display: block; position: fixed; inset: 50px 0 0 0; z-index: 10; }
+  body.nav-open .sidebar { display: block; position: fixed; inset: var(--topbar-h, 50px) 0 0 0; z-index: 10; }
+  /* Шапка на телефоні — два рядки: меню, назва й налаштування; нижче пошук і стан збереження. */
+  .topbar { flex-wrap: wrap; gap: 4px 8px; padding: 8px 12px; }
+  .topbar::after { content: ''; order: 1; flex-basis: 100%; }
+  .brand { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .search { order: 2; flex: 1 1 0; min-width: 0; margin-left: 0; }
+  .sync { order: 2; }
   .board { grid-template-columns: minmax(0, 1fr); }
   .progress-row { grid-template-columns: minmax(0, 1fr) 70px; }
   .progress-row .bar { grid-column: 1 / -1; order: 3; }

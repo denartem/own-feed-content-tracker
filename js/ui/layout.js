@@ -33,7 +33,14 @@ export function renderLayout(root, { app, route, main }) {
   // replaceChildren перетворює null на текст «null», тому порожні частини відфільтровуються
   root.replaceChildren(...[
     h('header', { class: 'topbar' },
-      h('button', { class: 'menu-toggle', 'aria-label': 'Меню', onClick: () => document.body.classList.toggle('nav-open') }, '☰'),
+      h('button', {
+        class: 'menu-toggle', 'aria-label': 'Меню',
+        onClick: (e) => {
+          // Дерево відкривається під шапкою, а її висота на телефоні залежить від переносу рядків.
+          document.documentElement.style.setProperty('--topbar-h', `${e.currentTarget.parentElement.offsetHeight}px`);
+          document.body.classList.toggle('nav-open');
+        },
+      }, '☰'),
       h('a', { class: 'brand', href: '#/' }, 'Own feed · трекер'),
       mode === 'local' ? h('span', { class: 'chip warn' }, 'тестові дані') : null,
       h('input', {
