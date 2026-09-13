@@ -5,7 +5,7 @@ import { commitMessage } from './core/commit-message.js';
 import { createAppState, tournamentPath, passportPath } from './ui/state.js';
 import { createActions } from './ui/actions.js';
 import { parseRoute } from './ui/router.js';
-import { h, preserveFocus } from './ui/dom.js';
+import { h, preserveFocus, whenPointerFree } from './ui/dom.js';
 import { renderLayout } from './ui/layout.js';
 import { renderOverview } from './ui/overview.js';
 import { renderSearch } from './ui/search.js';
@@ -129,7 +129,7 @@ async function boot() {
     const page = PAGES[route.name] ?? PAGES.overview;
     renderLayout(root, { app, route, main: page(ctx, route) });
   });
-  app.subscribe(render);
+  app.subscribe(() => whenPointerFree(render));
   window.addEventListener('hashchange', () => {
     document.body.classList.remove('nav-open');
     render();

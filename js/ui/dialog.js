@@ -1,4 +1,4 @@
-import { preserveFocus } from './dom.js';
+import { preserveFocus, whenPointerFree } from './dom.js';
 
 let active = null;
 
@@ -6,7 +6,11 @@ export function openDialog(app, render) {
   const dlg = document.getElementById('dialog');
   active?.dispose();
   const controller = new AbortController();
-  const rerender = () => preserveFocus(() => render(dlg));
+  // Відкладене перемальовування може настати вже після закриття цього діалогу — тоді воно нічого не робить.
+  const draw = () => {
+    if (active === handle) preserveFocus(() => render(dlg));
+  };
+  const rerender = () => whenPointerFree(draw);
   const unsubscribe = app ? app.subscribe(rerender) : () => {};
   const handle = {
     dispose() {

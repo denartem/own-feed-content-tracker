@@ -63,3 +63,40 @@ export function downloadText(filename, text) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// Поки триває клік (від натискання до події click), перемальовування чекає.
+// Інакше поле, що зберігається при втраті фокуса, перемальовує сторінку між натисканням
+// і відпусканням, кнопка під курсором замінюється новою, і браузер не надсилає click.
+export function createPointerGate(target, { later = (fn, ms) => setTimeout(fn, ms), cancel = clearTimeout } = {}) {
+  let pressed = false;
+  let fallback = null;
+  const waiting = new Set();
+  const flush = () => {
+    if (pressed) return;
+    const fns = [...waiting];
+    waiting.clear();
+    fns.forEach((fn) => fn());
+  };
+  const release = () => {
+    cancel(fallback);
+    pressed = false;
+    later(flush, 0);
+  };
+  target.addEventListener('pointerdown', () => {
+    cancel(fallback);
+    pressed = true;
+  }, true);
+  // Якщо click так і не прийде (кнопку відпустили деінде), перемальовування не зависає.
+  target.addEventListener('pointerup', () => {
+    cancel(fallback);
+    fallback = later(release, 500);
+  }, true);
+  target.addEventListener('pointercancel', release, true);
+  target.addEventListener('click', release, true);
+  return (fn) => {
+    if (pressed) waiting.add(fn);
+    else fn();
+  };
+}
+
+export const whenPointerFree = typeof document === 'undefined' ? (fn) => fn() : createPointerGate(document);
