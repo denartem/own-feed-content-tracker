@@ -7,9 +7,22 @@ import { unitLabel } from '../core/pairs.js';
 import { foldName, findInPool, compareNames } from '../core/names.js';
 import { tournamentHref, contentTypeHref } from './router.js';
 import { openUnitCard } from './unit-card.js';
+import { openPasteDialog, openAddUnitDialog } from './paste-dialog.js';
+import { pluralUk } from '../core/commit-message.js';
 
 const views = new Map();
 let openedFor = null;
+
+function generate(ctx, t) {
+  const n = ctx.actions.previewGenerate(t.id);
+  if (!n) {
+    alert('Усі можливі одиниці з пулу вже є.');
+    return;
+  }
+  if (confirm(`Буде додано ${n} ${pluralUk(n, ['одиницю', 'одиниці', 'одиниць'])} зі статусом to do. Додати?`)) {
+    ctx.actions.generate(t.id);
+  }
+}
 
 function viewState(id) {
   if (!views.has(id)) views.set(id, { view: 'board', q: '', status: '', flag: '', sort: 'status', selected: new Set() });
@@ -124,7 +137,10 @@ function renderPairsTab(ctx, t, doc, ct) {
         h('option', { value: '' }, 'усі'),
         h('option', { value: 'notAlphabetical', selected: vs.flag === 'notAlphabetical' }, 'не за алфавітом'),
         h('option', { value: 'belowTarget', selected: vs.flag === 'belowTarget' }, 'відео менше норми')),
-      h('span', { class: 'spacer' })),
+      h('span', { class: 'spacer' }),
+      h('button', { onClick: () => openAddUnitDialog(ctx, t.id) }, t.unitType === 'pair' ? '+ Пара' : '+ Одиниця'),
+      h('button', { onClick: () => openPasteDialog(ctx, t.id) }, 'Вставити список'),
+      h('button', { onClick: () => generate(ctx, t) }, 'Згенерувати з пулу')),
     doc.units.length ? null : h('p', { class: 'muted' }, 'Одиниць ще немає. Додайте їх вручну, вставте списком або згенеруйте з пулу.'),
     vs.view === 'board' ? renderBoard(ctx, t, units, target) : renderTable(ctx, t, doc, units, target, ct?.strength === true, vs));
 }
