@@ -9,10 +9,12 @@ import { h, preserveFocus } from './ui/dom.js';
 import { renderLayout } from './ui/layout.js';
 import { renderOverview } from './ui/overview.js';
 import { renderSearch } from './ui/search.js';
+import { renderTournament } from './ui/tournament.js';
 import { renderSettings, renderTokenForm, TOKEN_KEY, REPO_KEY, DEFAULT_REPO } from './ui/settings.js';
 
 const PAGES = {
   overview: renderOverview,
+  tournament: renderTournament,
   search: renderSearch,
   settings: renderSettings,
 };
