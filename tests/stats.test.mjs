@@ -39,4 +39,5 @@ test('overviewStats', () => {
   assert.deepEqual(ov.totals, { done: 1, 'in progress': 1, 'to do': 1 });
   assert.deepEqual(ov.rows.map((r) => [r.id, r.sportName, r.categoryName, r.stats.plan]), [['t1', 'Sport', 'Cat', 3], ['t2', 'Sport', 'Cat', 0]]);
   assert.deepEqual(ov.inProgress.map((g) => [g.id, g.units.map((u) => u.id)]), [['t1', ['u2']]]);
+  assert.deepEqual(ov.inProgress.map((g) => g.path), ['Sport - Cat - T1']);
 });

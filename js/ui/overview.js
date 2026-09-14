@@ -20,7 +20,7 @@ export function renderOverview({ app }) {
     h('h2', {}, 'Зараз у роботі'),
     ov.inProgress.length
       ? ov.inProgress.map((g) => h('details', { class: 'active-group' },
-        h('summary', {}, h('a', { href: tournamentHref(g.id) }, g.name), ` — ${g.units.length}`),
+        h('summary', {}, h('a', { href: tournamentHref(g.id) }, g.path), ` — ${g.units.length}`),
         h('ul', {}, g.units.map((u) => h('li', {}, h('a', { href: tournamentHref(g.id, { open: u.id }) }, unitLabel(u)))))))
       : h('p', { class: 'muted' }, 'Зараз нічого не в роботі.'),
     h('h2', {}, 'Турніри'),

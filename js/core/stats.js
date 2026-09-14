@@ -33,12 +33,15 @@ export function overviewStats(structure, docsById) {
     const stats = tournamentStats(doc, types.get(t.contentTypeId)?.videosTarget ?? null);
     for (const key of Object.keys(totals)) totals[key] += stats.byStatus[key];
     const category = categories.get(t.categoryId);
-    rows.push({
-      id: t.id, name: t.name, categoryName: category?.name ?? '',
-      sportName: sports.get(category?.sportId)?.name ?? '', stats,
-    });
+    const categoryName = category?.name ?? '';
+    const sportName = sports.get(category?.sportId)?.name ?? '';
+    rows.push({ id: t.id, name: t.name, categoryName, sportName, stats });
     const active = doc.units.filter((u) => u.status === 'in progress');
-    if (active.length) inProgress.push({ id: t.id, name: t.name, units: active });
+    if (active.length) {
+      // Повний шлях: однакові назви турнірів бувають у різних категоріях.
+      const path = [sportName, categoryName, t.name].filter(Boolean).join(' - ');
+      inProgress.push({ id: t.id, name: t.name, path, units: active });
+    }
   }
   return { totals, rows, inProgress };
 }
