@@ -61,7 +61,7 @@ async function ensurePassport(app, store, cache, id) {
 function renderStart(reason) {
   root.replaceChildren(h('main', { class: 'main' },
     h('h2', {}, 'Підключення до даних'),
-    h('p', {}, 'Вставте токен GitHub із доступом до приватного репозиторію даних. Покрокова інструкція є в README репозиторію own-feed-data.'),
+    h('p', {}, 'Вставте токен GitHub із доступом до приватного репозиторію даних. Покрокова інструкція є в README репозиторію own-feed-content-data.'),
     renderTokenForm({ reason }),
     h('p', { class: 'muted' }, h('a', { href: '?local=1' }, 'Відкрити з тестовими даними'))));
 }

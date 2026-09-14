@@ -3,7 +3,7 @@ import { localToday } from './actions.js';
 
 export const TOKEN_KEY = 'own-feed-token';
 export const REPO_KEY = 'own-feed-repo';
-export const DEFAULT_REPO = 'denartem/own-feed-data';
+export const DEFAULT_REPO = 'denartem/own-feed-content-data';
 
 let accessMessage = '';
 
