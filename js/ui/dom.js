@@ -64,6 +64,15 @@ export function downloadText(filename, text) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+export async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Поки триває клік (від натискання до події click), перемальовування чекає.
 // Інакше поле, що зберігається при втраті фокуса, перемальовує сторінку між натисканням
 // і відпусканням, кнопка під курсором замінюється новою, і браузер не надсилає click.

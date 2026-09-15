@@ -10,7 +10,7 @@ const SYNC_LABEL = {
 function renderSidebar(structure, docs, route) {
   const isActive = (name, id) => route.name === name && route.id === id;
   return h('nav', { class: 'sidebar' },
-    h('a', { class: `tree-item${route.name === 'overview' ? ' active' : ''}`, href: '#/' }, 'Огляд'),
+    h('a', { class: `tree-overview${route.name === 'overview' ? ' active' : ''}`, href: '#/' }, 'Загальний огляд'),
     structure.sports.map((sport) => h('div', { class: 'tree-sport' },
       h('div', { class: 'tree-label' }, sport.name),
       structure.categories.filter((c) => c.sportId === sport.id).map((cat) => h('div', { class: 'tree-cat' },

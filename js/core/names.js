@@ -25,3 +25,11 @@ export function findInPool(pool, raw) {
   const key = foldName(raw);
   return pool.find((m) => foldName(m.name) === key) ?? null;
 }
+
+export function sortPool(pool) {
+  return [...pool].sort((x, y) => compareNames(x.name, y.name));
+}
+
+export function poolText(pool) {
+  return sortPool(pool).map((m) => m.name).join('\n');
+}

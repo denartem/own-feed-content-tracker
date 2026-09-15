@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanName, foldName, sameName, compareNames, isAlphabetical, findInPool } from '../js/core/names.js';
+import { cleanName, foldName, sameName, compareNames, isAlphabetical, findInPool, sortPool, poolText } from '../js/core/names.js';
 
 test('cleanName замінює _ на пробіл і стискає пробіли', () => {
   assert.equal(cleanName('  NORTH_CITY  '), 'NORTH CITY');
@@ -29,4 +29,16 @@ test('findInPool знаходить учасника без урахування
   const pool = [{ name: 'Olímpico Norte', strength: 0.5 }];
   assert.deepEqual(findInPool(pool, 'OLIMPICO_NORTE'), pool[0]);
   assert.equal(findInPool(pool, 'Bravo'), null);
+});
+
+test('sortPool упорядковує учасників за назвою і не змінює пул', () => {
+  const pool = [{ name: 'LIMA', strength: 0.2 }, { name: 'Olímpico Norte', strength: null }, { name: 'ALPHA', strength: 0.5 }];
+  assert.deepEqual(sortPool(pool).map((m) => m.name), ['ALPHA', 'LIMA', 'Olímpico Norte']);
+  assert.deepEqual(pool.map((m) => m.name), ['LIMA', 'Olímpico Norte', 'ALPHA']);
+});
+
+test('poolText: усі учасники за алфавітом, по одному в рядку', () => {
+  const pool = [{ name: 'LIMA', strength: 0.2 }, { name: 'Olímpico Norte', strength: null }, { name: 'ALPHA', strength: 0.5 }];
+  assert.equal(poolText(pool), 'ALPHA\nLIMA\nOlímpico Norte');
+  assert.equal(poolText([]), '');
 });

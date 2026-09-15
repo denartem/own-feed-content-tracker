@@ -1,5 +1,7 @@
-import { h } from './dom.js';
-import { compareNames, sameName } from '../core/names.js';
+import { h, copyText } from './dom.js';
+import { sameName, sortPool, poolText } from '../core/names.js';
+
+const COPY_LABEL = 'Скопіювати список';
 
 export function renderPoolTab(ctx, t, doc, ct) {
   const { actions } = ctx;
@@ -9,10 +11,20 @@ export function renderPoolTab(ctx, t, doc, ct) {
     if (error) alert(error);
   };
   return h('section', {},
-    h('p', { class: 'muted' }, `Учасників: ${doc.pool.length}`),
+    h('div', { class: 'toolbar' },
+      h('span', { class: 'muted' }, `Учасників: ${doc.pool.length}`),
+      h('button', {
+        disabled: !doc.pool.length, title: 'Усі учасники за алфавітом, по одному в рядку',
+        onClick: async (e) => {
+          const button = e.currentTarget;
+          const ok = await copyText(poolText(doc.pool));
+          button.textContent = ok ? `Скопійовано: ${doc.pool.length}` : 'Не вдалося скопіювати';
+          setTimeout(() => { button.textContent = COPY_LABEL; }, 2000);
+        },
+      }, COPY_LABEL)),
     h('div', { class: 'table-wrap' }, h('table', { class: 'grid' },
       h('thead', {}, h('tr', {}, h('th', {}, 'Учасник'), strengthOn ? h('th', {}, 'Сила') : null, h('th', {}, ''))),
-      h('tbody', {}, [...doc.pool].sort((x, y) => compareNames(x.name, y.name)).map((m) => h('tr', {},
+      h('tbody', {}, sortPool(doc.pool).map((m) => h('tr', {},
         h('td', {}, m.name),
         strengthOn ? h('td', {}, h('input', {
           class: 'narrow', type: 'number', step: '0.01', value: m.strength ?? '', 'aria-label': `Сила ${m.name}`,
