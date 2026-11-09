@@ -24,3 +24,15 @@ test('CSV: сила лише для типів зі strength, коректне �
   assert.equal(lines[1], 'Demo Sport,Moments,North League,ALPHA,0.41,CHARLIE,0.17,done,,12,"нотатка, з комою",2026-09-12');
   assert.equal(lines[2], 'Demo Sport,Replays,South League,ALPHA,,CHARLIE,,done,,12,,2026-09-12');
 });
+
+test('CSV: сила з параметрами', () => {
+  const structure = {
+    contentTypes: [{ id: 'h', name: 'H', videosTarget: null, strength: true, strengthParams: ['2PT', '3PT'] }],
+    sports: [{ id: 's', name: 'S' }], categories: [{ id: 'c', sportId: 's', name: 'C' }],
+    tournaments: [{ id: 't', categoryId: 'c', name: 'T', contentTypeId: 'h', unitType: 'pair' }],
+  };
+  const pool = [{ name: 'ALPHA', strength: { '2PT': 66.6, '3PT': 33.4 } }, { name: 'BRAVO', strength: null }];
+  const units = [{ id: 'u1', a: 'ALPHA', b: 'BRAVO', status: 'to do', priority: null, videos: null, note: '', updatedAt: '2026-09-12', history: [] }];
+  const lines = toCsv(structure, { t: { id: 't', notes: '', pool, units } }).slice(1).trim().split('\r\n');
+  assert.equal(lines[1], 'S,C,T,ALPHA,2PT 66.6 · 3PT 33.4,BRAVO,,to do,,,,2026-09-12');
+});

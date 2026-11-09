@@ -1,11 +1,14 @@
 import { h, copyText } from './dom.js';
 import { sameName, sortPool, poolText } from '../core/names.js';
+import { strengthParams, withParam } from '../core/strength.js';
 
 const COPY_LABEL = 'Скопіювати список';
 
 export function renderPoolTab(ctx, t, doc, ct) {
   const { actions } = ctx;
   const strengthOn = ct?.strength === true;
+  const params = strengthParams(ct);
+  const num = (v) => (v === '' ? null : Number(v));
   const used = (name) => doc.units.some((u) => sameName(u.a, name) || (u.b != null && sameName(u.b, name)));
   const report = (error) => {
     if (error) alert(error);
@@ -23,12 +26,17 @@ export function renderPoolTab(ctx, t, doc, ct) {
         },
       }, COPY_LABEL)),
     h('div', { class: 'table-wrap' }, h('table', { class: 'grid' },
-      h('thead', {}, h('tr', {}, h('th', {}, 'Учасник'), strengthOn ? h('th', {}, 'Сила') : null, h('th', {}, ''))),
+      h('thead', {}, h('tr', {}, h('th', {}, 'Учасник'),
+        strengthOn ? (params.length ? params.map((p) => h('th', {}, p)) : h('th', {}, 'Сила')) : null, h('th', {}, ''))),
       h('tbody', {}, sortPool(doc.pool).map((m) => h('tr', {},
         h('td', {}, m.name),
-        strengthOn ? h('td', {}, h('input', {
-          class: 'narrow', type: 'number', step: '0.01', value: m.strength ?? '', 'aria-label': `Сила ${m.name}`,
-          onChange: (e) => actions.setStrength(t.id, m.name, e.target.value === '' ? null : Number(e.target.value)),
+        strengthOn && params.length ? params.map((p) => h('td', {}, h('input', {
+          class: 'narrow', type: 'number', step: 'any', value: m.strength?.[p] ?? '', 'aria-label': `${p} ${m.name}`,
+          onChange: (e) => actions.setStrength(t.id, m.name, withParam(m.strength, params, p, num(e.target.value))),
+        }))) : null,
+        strengthOn && !params.length ? h('td', {}, h('input', {
+          class: 'narrow', type: 'number', step: '0.01', value: typeof m.strength === 'number' ? m.strength : '', 'aria-label': `Сила ${m.name}`,
+          onChange: (e) => actions.setStrength(t.id, m.name, num(e.target.value)),
         })) : null,
         h('td', {},
           h('button', {

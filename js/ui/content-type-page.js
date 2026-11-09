@@ -35,7 +35,16 @@ export function renderContentTypePage(ctx, route) {
       h('label', { for: `ct-strength-${ct.id}` }, 'Сила учасників'),
       h('label', { class: 'check' },
         h('input', { id: `ct-strength-${ct.id}`, type: 'checkbox', checked: ct.strength, onChange: (e) => actions.updateContentType(ct.id, { strength: e.target.checked }) }),
-        ' вести силу в турнірах цього типу')),
+        ' вести силу в турнірах цього типу'),
+      h('label', { for: `ct-params-${ct.id}` }, 'Параметри сили'),
+      h('input', {
+        id: `ct-params-${ct.id}`, value: (ct.strengthParams ?? []).join(', '), placeholder: 'одне число; або через кому, напр. 2PT, 3PT',
+        disabled: !ct.strength,
+        onChange: (e) => {
+          const params = [...new Set(e.target.value.split(',').map((x) => x.trim()).filter(Boolean))];
+          actions.updateContentType(ct.id, { strengthParams: params.length ? params : null });
+        },
+      })),
     h('h3', {}, 'Турніри цього типу'),
     tournaments.length
       ? h('ul', {}, tournaments.map((t) => {

@@ -4,6 +4,7 @@ import { cleanName, foldName, sameName, findInPool } from '../core/names.js';
 import { serializeJson } from '../core/ops.js';
 import { PASSPORT_TEMPLATE, UNIT_TYPES } from '../core/constants.js';
 import { toCsv } from '../core/csv.js';
+import { sameStrength } from '../core/strength.js';
 import { tournamentPath, passportPath } from './state.js';
 
 export function localToday(date = new Date()) {
@@ -31,7 +32,7 @@ export function createActions(app, { today = localToday } = {}) {
     if (units.length) app.dispatchTournament(tId, { type: 'addUnits', units });
   };
   const fromOf = (target, changes) => Object.fromEntries(Object.keys(changes).map((k) => [k, target[k]]));
-  const unchanged = (target, changes) => Object.entries(changes).every(([k, v]) => target[k] === v);
+  const unchanged = (target, changes) => Object.entries(changes).every(([k, v]) => JSON.stringify(target[k] ?? null) === JSON.stringify(v ?? null));
 
   const actions = {
     setStatus(tId, unitId, to) {
@@ -91,7 +92,7 @@ export function createActions(app, { today = localToday } = {}) {
     },
     setStrength(tId, name, to) {
       const member = findInPool(doc(tId).pool, name);
-      if (!member || member.strength === to) return;
+      if (!member || sameStrength(member.strength, to)) return;
       app.dispatchTournament(tId, { type: 'setStrength', name: member.name, from: member.strength, to });
     },
     renamePool(tId, from, raw) {

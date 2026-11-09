@@ -1,6 +1,7 @@
 import { h, formatDate } from './dom.js';
 import { STATUSES, PRIORITIES } from '../core/constants.js';
-import { unitFlags } from '../core/validate.js';
+import { unitFlags, unitTarget } from '../core/validate.js';
+import { strengthParams, formatStrength } from '../core/strength.js';
 import { unitLabel } from '../core/pairs.js';
 import { findInPool } from '../core/names.js';
 import { openDialog } from './dialog.js';
@@ -20,9 +21,10 @@ export function openUnitCard(ctx, tId, unitId) {
     if (key === lastKey) return;
     lastKey = key;
     const ct = app.contentType(t.contentTypeId);
-    const target = ct?.videosTarget ?? null;
-    const flags = unitFlags(u, target);
-    const strength = (name) => findInPool(doc.pool, name)?.strength ?? '—';
+    const ctTarget = ct?.videosTarget ?? null;
+    const target = unitTarget(u, ctTarget);
+    const flags = unitFlags(u, ctTarget);
+    const strength = (name) => formatStrength(findInPool(doc.pool, name)?.strength ?? null, strengthParams(ct));
     dlg.replaceChildren(h('form', { class: 'card-form', onSubmit: (e) => e.preventDefault() },
       h('div', { class: 'card-head' },
         h('strong', {}, unitLabel(u)), h('span', { class: 'muted' }, t.name),
@@ -42,6 +44,12 @@ export function openUnitCard(ctx, tId, unitId) {
       h('input', {
         id: 'card-videos', type: 'number', min: 0, step: 1, value: u.videos ?? '', class: flags.belowTarget ? 'warn' : null,
         onChange: (e) => actions.setField(tId, unitId, 'videos', e.target.value === '' ? null : Math.max(0, Math.round(Number(e.target.value)))),
+      }),
+      h('label', { for: 'card-target' }, 'Норма відео для пари'),
+      h('input', {
+        id: 'card-target', type: 'number', min: 0, step: 1, value: u.videosTarget ?? '',
+        placeholder: ctTarget != null ? `як у типу: ${ctTarget}` : 'не задано',
+        onChange: (e) => actions.setField(tId, unitId, 'videosTarget', e.target.value === '' ? null : Math.max(0, Math.round(Number(e.target.value)))),
       }),
       h('label', { for: 'card-note' }, u.status === 'invalid data' ? 'Причина' : 'Нотатка'),
       h('textarea', { id: 'card-note', rows: 3, onChange: (e) => actions.setField(tId, unitId, 'note', e.target.value) }, u.note),

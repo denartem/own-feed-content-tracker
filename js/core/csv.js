@@ -1,4 +1,5 @@
 import { findInPool } from './names.js';
+import { strengthParams, formatStrength } from './strength.js';
 
 const HEADER = ['sport', 'category', 'tournament', 'a', 'strength_a', 'b', 'strength_b', 'status', 'priority', 'videos', 'note', 'updated_at'];
 const BOM = String.fromCharCode(0xfeff);
@@ -17,8 +18,13 @@ export function toCsv(structure, docsById) {
     const doc = docsById[t.id];
     if (!doc) continue;
     const category = categories.get(t.categoryId);
-    const withStrength = types.get(t.contentTypeId)?.strength === true;
-    const strengthOf = (name) => (withStrength && name != null ? findInPool(doc.pool, name)?.strength ?? null : null);
+    const ct = types.get(t.contentTypeId);
+    const withStrength = ct?.strength === true;
+    const params = strengthParams(ct);
+    const strengthOf = (name) => {
+      const value = withStrength && name != null ? findInPool(doc.pool, name)?.strength ?? null : null;
+      return value != null && typeof value === 'object' ? formatStrength(value, params) : value;
+    };
     for (const u of doc.units) {
       lines.push([
         sports.get(category?.sportId)?.name, category?.name, t.name, u.a, strengthOf(u.a), u.b, strengthOf(u.b),

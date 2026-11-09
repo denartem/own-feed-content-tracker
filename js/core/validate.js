@@ -3,7 +3,9 @@ import { foldName, isAlphabetical } from './names.js';
 import { unitKey } from './pairs.js';
 
 const isCount = (v) => v === null || (Number.isInteger(v) && v >= 0);
-const isStrength = (v) => v === null || (typeof v === 'number' && Number.isFinite(v));
+const isNumber = (v) => typeof v === 'number' && Number.isFinite(v);
+const isStrength = (v) => v === null || isNumber(v)
+  || (typeof v === 'object' && !Array.isArray(v) && Object.values(v).every((x) => x === null || isNumber(x)));
 
 function uniqueIds(list, label, errors) {
   const seen = new Set();
@@ -29,6 +31,10 @@ export function validateStructure(structure) {
   for (const c of structure.contentTypes) {
     if (!isCount(c.videosTarget)) errors.push(`Тип ${c.id}: videosTarget має бути цілим від 0 або null`);
     if (typeof c.strength !== 'boolean') errors.push(`Тип ${c.id}: strength має бути true або false`);
+    if (c.strengthParams != null && !(Array.isArray(c.strengthParams)
+      && c.strengthParams.every((p) => typeof p === 'string' && p.trim()))) {
+      errors.push(`Тип ${c.id}: strengthParams має бути списком непорожніх назв`);
+    }
   }
   for (const c of structure.categories) {
     if (!sports.has(c.sportId)) errors.push(`Категорія ${c.id}: невідомий спорт ${c.sportId}`);
@@ -48,7 +54,7 @@ export function validateTournament(doc, unitType) {
     const key = foldName(m.name);
     if (!key) errors.push('Пул: порожня назва');
     if (pool.has(key)) errors.push(`Пул: повторюється ${m.name}`);
-    if (!isStrength(m.strength ?? null)) errors.push(`Пул: сила ${m.name} має бути числом або null`);
+    if (!isStrength(m.strength ?? null)) errors.push(`Пул: сила ${m.name} має бути числом, набором чисел або null`);
     pool.add(key);
   }
   const ids = new Set();
@@ -59,6 +65,7 @@ export function validateTournament(doc, unitType) {
     if (!STATUSES.includes(u.status)) errors.push(`${u.id}: статус ${u.status} не дозволений`);
     if (u.priority !== null && !PRIORITIES.includes(u.priority)) errors.push(`${u.id}: пріоритет ${u.priority} не дозволений`);
     if (!isCount(u.videos)) errors.push(`${u.id}: videos має бути цілим від 0 або null`);
+    if (!isCount(u.videosTarget ?? null)) errors.push(`${u.id}: videosTarget має бути цілим від 0 або null`);
     for (const n of [u.a, u.b]) {
       if (n != null && !pool.has(foldName(n))) errors.push(`${u.id}: учасника ${n} немає в пулі`);
     }
@@ -89,7 +96,13 @@ export function validateAll(structure, docsById) {
   return errors;
 }
 
-export function unitFlags(unit, videosTarget) {
+// Норма пари (unit.videosTarget) важливіша за норму типу контенту.
+export function unitTarget(unit, videosTarget) {
+  return unit.videosTarget ?? videosTarget ?? null;
+}
+
+export function unitFlags(unit, ctTarget) {
+  const videosTarget = unitTarget(unit, ctTarget);
   return {
     notAlphabetical: unit.b != null && !isAlphabetical(unit.a, unit.b),
     belowTarget: videosTarget != null && unit.videos != null && unit.videos < videosTarget,

@@ -66,3 +66,27 @@ test('unitFlags', () => {
   assert.deepEqual(unitFlags({ a: 'A', b: 'C', videos: null }, 10), { notAlphabetical: false, belowTarget: false });
   assert.deepEqual(unitFlags({ a: 'A', b: null, videos: 3 }, null), { notAlphabetical: false, belowTarget: false });
 });
+
+test('unitFlags: норма пари важливіша за норму типу', () => {
+  assert.deepEqual(unitFlags({ a: 'A', b: 'C', videos: 120, videosTarget: 138 }, 100), { notAlphabetical: false, belowTarget: true });
+  assert.deepEqual(unitFlags({ a: 'A', b: 'C', videos: 120, videosTarget: 100 }, 138), { notAlphabetical: false, belowTarget: false });
+  assert.deepEqual(unitFlags({ a: 'A', b: 'C', videos: 5, videosTarget: 10 }, null), { notAlphabetical: false, belowTarget: true });
+  assert.deepEqual(unitFlags({ a: 'A', b: 'C', videos: 5, videosTarget: null }, 10), { notAlphabetical: false, belowTarget: true });
+});
+
+test('norma пари і сила з параметрами валідуються', () => {
+  const s = structure();
+  s.contentTypes[0].strengthParams = ['2PT', '3PT'];
+  assert.deepEqual(validateStructure(s), []);
+  s.contentTypes[0].strengthParams = ['2PT', ''];
+  assert.match(validateStructure(s).join('\n'), /strengthParams/);
+  const d = doc();
+  d.pool[0].strength = { '2PT': 66.6, '3PT': 33.4 };
+  d.units[0].videosTarget = 138;
+  assert.deepEqual(validateTournament(d, 'pair'), []);
+  d.pool[1].strength = { '2PT': 'x' };
+  d.units[1].videosTarget = -2;
+  const errors = validateTournament(d, 'pair').join('\n');
+  assert.match(errors, /сила B/);
+  assert.match(errors, /u002: videosTarget/);
+});

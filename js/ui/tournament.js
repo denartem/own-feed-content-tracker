@@ -2,7 +2,8 @@ import { h, statusClass, formatDate } from './dom.js';
 import { STATUSES } from '../core/constants.js';
 import { tournamentStats } from '../core/stats.js';
 import { boardColumns, sortUnits } from '../core/board.js';
-import { unitFlags } from '../core/validate.js';
+import { unitFlags, unitTarget } from '../core/validate.js';
+import { strengthParams, formatStrength } from '../core/strength.js';
 import { unitLabel } from '../core/pairs.js';
 import { foldName, findInPool, compareNames } from '../core/names.js';
 import { tournamentHref, contentTypeHref } from './router.js';
@@ -47,8 +48,9 @@ function filterUnits(doc, vs, target) {
     && (!vs.flag || unitFlags(u, target)[vs.flag]));
 }
 
-function badges(u, target) {
-  const flags = unitFlags(u, target);
+function badges(u, ctTarget) {
+  const flags = unitFlags(u, ctTarget);
+  const target = unitTarget(u, ctTarget);
   return [
     u.priority ? h('span', { class: `badge${u.priority === 'high' ? ' high' : ''}` }, u.priority) : null,
     u.videos != null ? h('span', { class: `badge${flags.belowTarget ? ' warn' : ''}` }, target != null ? `відео ${u.videos}/${target}` : `відео ${u.videos}`) : null,
@@ -65,13 +67,23 @@ function renderBoard(ctx, t, units, target) {
       u.status === 'invalid data' && u.note ? h('div', { class: 'muted' }, u.note) : null)))));
 }
 
-function renderTable(ctx, t, doc, units, target, strengthOn, vs) {
+function renderTable(ctx, t, doc, units, target, ct, vs) {
+  const strengthOn = ct?.strength === true;
+  const params = strengthParams(ct);
   const { actions } = ctx;
   const rerender = () => ctx.app.notify();
   const sorted = vs.sort === 'priority' ? sortUnits(units) : [...units].sort(SORTS[vs.sort] ?? SORTS.status);
   const allSelected = sorted.length > 0 && sorted.every((u) => vs.selected.has(u.id));
   const head = (key, label) => h('th', { class: 'sortable', onClick: () => { vs.sort = key; rerender(); } }, vs.sort === key ? `${label} ↓` : label);
-  const strength = (name) => findInPool(doc.pool, name)?.strength ?? '—';
+  const strength = (name) => formatStrength(findInPool(doc.pool, name)?.strength ?? null, params);
+  // З параметрами: «63.3/36.7» для кожного учасника в окремому рядку, назви параметрів — у заголовку.
+  const short = (name) => {
+    const value = findInPool(doc.pool, name)?.strength;
+    return value && typeof value === 'object' ? params.map((p) => value[p] ?? '—').join('/') : '—';
+  };
+  const strengthCell = (u) => (params.length
+    ? h('td', { style: 'white-space:nowrap' }, [u.a, u.b].filter((n) => n != null).map((n) => h('div', {}, short(n))))
+    : h('td', {}, u.b == null ? strength(u.a) : `${strength(u.a)} / ${strength(u.b)}`));
   return h('div', {},
     vs.selected.size ? h('div', { class: 'bulk' },
       `Вибрано: ${vs.selected.size}`,
@@ -96,7 +108,7 @@ function renderTable(ctx, t, doc, units, target, strengthOn, vs) {
           },
         })),
         head('label', 'Учасники'),
-        strengthOn ? h('th', {}, 'Сила') : null,
+        strengthOn ? h('th', {}, params.length ? `Сила (${params.join('/')})` : 'Сила') : null,
         head('status', 'Статус'), head('priority', 'Пріоритет'), head('videos', 'Відео'),
         h('th', {}, 'Нотатка'), head('updatedAt', 'Дата'))),
       h('tbody', {}, sorted.map((u) => {
@@ -113,11 +125,12 @@ function renderTable(ctx, t, doc, units, target, strengthOn, vs) {
           h('td', {},
             h('a', { href: '#', onClick: (e) => { e.preventDefault(); openUnitCard(ctx, t.id, u.id); } }, unitLabel(u)),
             flags.notAlphabetical ? h('span', { class: 'badge warn', title: 'Назва не за алфавітом' }, 'А→Я') : null),
-          strengthOn ? h('td', {}, u.b == null ? strength(u.a) : `${strength(u.a)} / ${strength(u.b)}`) : null,
+          strengthOn ? strengthCell(u) : null,
           h('td', {}, h('select', { 'aria-label': 'Статус', onChange: (e) => actions.setStatus(t.id, u.id, e.target.value) },
             STATUSES.map((s) => h('option', { value: s, selected: s === u.status }, s)))),
           h('td', {}, u.priority ?? ''),
-          h('td', { class: flags.belowTarget ? 'warn-text' : null }, u.videos ?? ''),
+          h('td', { class: flags.belowTarget ? 'warn-text' : null },
+            u.videosTarget != null ? `${u.videos ?? '—'}/${u.videosTarget}` : u.videos ?? ''),
           h('td', { class: 'muted' }, u.note),
           h('td', { class: 'muted' }, formatDate(u.updatedAt)));
       })))));
@@ -145,7 +158,7 @@ function renderPairsTab(ctx, t, doc, ct) {
       h('button', { onClick: () => openPasteDialog(ctx, t.id) }, 'Вставити список'),
       h('button', { onClick: () => generate(ctx, t) }, 'Згенерувати з пулу')),
     doc.units.length ? null : h('p', { class: 'muted' }, 'Одиниць ще немає. Додайте їх вручну, вставте списком або згенеруйте з пулу.'),
-    vs.view === 'board' ? renderBoard(ctx, t, units, target) : renderTable(ctx, t, doc, units, target, ct?.strength === true, vs));
+    vs.view === 'board' ? renderBoard(ctx, t, units, target) : renderTable(ctx, t, doc, units, target, ct, vs));
 }
 
 const TABS = [
@@ -198,6 +211,7 @@ function renderHeader(ctx, t, doc, ct) {
     h('div', { class: 'chips' },
       ct ? h('a', { class: 'chip accent', href: contentTypeHref(ct.id) }, `тип: ${ct.name}`) : null,
       ct?.videosTarget != null ? h('span', { class: 'chip' }, `норма відео: ${ct.videosTarget}`) : null,
+      doc.units.some((u) => u.videosTarget != null) ? h('span', { class: 'chip', title: 'Норма задана в самих парах' }, 'норма відео: своя в парах') : null,
       h('span', { class: 'chip' }, `пул: ${doc.pool.length}`),
       STATUSES.map((s) => h('span', { class: `chip ${statusClass(s)}` }, `${s}: ${st.byStatus[s]}`)),
       st.videosTotal ? h('span', { class: 'chip' }, `відео: ${st.videosTotal}`) : null,

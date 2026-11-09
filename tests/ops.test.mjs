@@ -85,3 +85,18 @@ test('applyOpsToText: послідовні зміни, новий файл, те
   assert.equal(gone.deleted, true);
   assert.equal(gone.text, null);
 });
+
+test('setStrength з параметрами: конфлікт за значенням, а не за посиланням', () => {
+  const d = doc();
+  d.pool[0].strength = { '2PT': 66.6, '3PT': 33.4 };
+  const r = applyTournamentOp(d, { type: 'setStrength', name: 'A', from: { '2PT': 66.6, '3PT': 33.4 }, to: { '2PT': 60, '3PT': 40 } });
+  assert.equal(r.conflict, false);
+  assert.deepEqual(r.doc.pool[0].strength, { '2PT': 60, '3PT': 40 });
+});
+
+test('updateContentType: масив у from не дає хибного конфлікту', () => {
+  const s = { version: 1, contentTypes: [{ id: 'ct', name: 'CT', videosTarget: null, strength: true, strengthParams: ['X', 'Y'] }], sports: [], categories: [], tournaments: [] };
+  const r = applyStructureOp(s, { type: 'updateContentType', id: 'ct', from: { strengthParams: ['X', 'Y'] }, changes: { strengthParams: ['X'] } });
+  assert.equal(r.conflict, false);
+  assert.deepEqual(r.doc.contentTypes[0].strengthParams, ['X']);
+});

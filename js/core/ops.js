@@ -1,6 +1,7 @@
 import { foldName } from './names.js';
 import { unitKey } from './pairs.js';
 import { nextUnitId } from './ids.js';
+import { sameStrength } from './strength.js';
 
 export function serializeJson(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
@@ -64,7 +65,7 @@ export function applyTournamentOp(input, op) {
     case 'setStrength': {
       const member = doc.pool.find((x) => same(x.name, op.name));
       if (!member) return result(doc, true);
-      const conflict = member.strength !== op.from;
+      const conflict = !sameStrength(member.strength, op.from);
       member.strength = op.to;
       return result(doc, conflict);
     }
@@ -113,7 +114,7 @@ export function applyStructureOp(input, op) {
   const update = (list) => {
     const target = list.find((x) => x.id === op.id);
     if (!target) return result(s, true);
-    const conflict = Object.entries(op.from ?? {}).some(([k, v]) => target[k] !== v);
+    const conflict = Object.entries(op.from ?? {}).some(([k, v]) => JSON.stringify(target[k] ?? null) !== JSON.stringify(v ?? null));
     Object.assign(target, op.changes);
     return result(s, conflict);
   };
